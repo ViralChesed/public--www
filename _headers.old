@@ -1,8 +1,0 @@
-/*.css
-  Cache-Control: public, s-max-age=31536000, max-age=31536000
-/*.js
-  Cache-Control: public, s-max-age=31536000, max-age=31536000
-/*.ico
-  Cache-Control: public, s-max-age=31536000, max-age=31536000
-/*.png
-  Cache-Control: public, s-max-age=31536000, max-age=31536000
