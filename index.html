@@ -78,7 +78,50 @@
     <img src="email.svg" alt="Contact Us">
   </div>
 
-  <script src="script.0.00.001.js" type="text/javascript"></script>
+  <script>
+    async function loadAndInjectScript(scriptUrl) {
+      try {
+        // 1. Fetch the script from the server.
+        const response = await fetch(scriptUrl);
+    
+        // Check if the request was successful.
+        if (!response.ok) {
+          throw new Error(`Failed to fetch script: ${response.status} ${response.statusText}`);
+        }
+    
+        // 2. Access the headers (your original goal).
+        const lastModified = response.headers.get('Last-Modified');
+        if (lastModified) {
+          const lastModifiedDate = new Date(lastModified);
+          console.log(`Script '${scriptUrl}' was last modified on: ${lastModifiedDate.toLocaleString()}`);
+        } else {
+          console.log(`Last-Modified header not found for '${scriptUrl}'.`);
+        }
+    
+        // 3. Get the script's content as plain text.
+        const scriptCode = await response.text();
+    
+        // 4. Create a new <script> element.
+        const scriptElement = document.createElement('script');
+        scriptElement.type = "text/javascript";
+    
+        // 5. Inject the fetched code into the element.
+        // Using .textContent ensures the browser treats it as code to be parsed, not HTML.
+        scriptElement.textContent = scriptCode;
+    
+        // 6. Append the element to the document's head to execute it.
+        document.head.appendChild(scriptElement);
+        console.log(`Successfully loaded and injected script: ${scriptUrl}`);
+    
+      } catch (error) {
+        console.error('Error loading script:', error);
+      }
+    }
+
+    
+    loadAndInjectScript('script.0.00.001.js');
+
+  </script>
 
 </body>
 
