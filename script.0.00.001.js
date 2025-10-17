@@ -21,6 +21,8 @@ const byobYoutubeLinkEl = document.querySelector('.byob-youtube-link');
 let globalAnimationLockMs = 0;
 let nextPreviousAnimationLockMs = 0;
 
+console.log(`HERE!!!!!`);
+
 notifyIfBrowserIsNotCompat();
 
 function init() {
