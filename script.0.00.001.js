@@ -28,7 +28,7 @@ notifyIfBrowserIsNotCompat();
 function init() {
   console.log('init()');
 
-  plyr.play();
+  // plyr.play();
 
   showNotPlayingState();
 
