@@ -420,6 +420,7 @@ const playlists = [
   { id: "PLmFgO4C0SOsj1oA9kvsC7hCeJBGh2yrQw", title: "NBA Highlights and Replays \n(100+ Videos)\n", videoId: 'ijl1F1mnm_A', shuffle: true },
   // { id: "PLmFgO4C0SOsjy8ubNSVF9G94G4NBXH2D6", title: "NFL Highlights and Replays \n(220+ Videos)\n", videoId: 'W0dqE-9rcpg', shuffle: true },
 
+  { id: "PLdOHl5rBEBDy6RLWCZ_kKQ7hsFSiotyk0", title: "Dr Shnitzel's Wacky Science \n(34+ Videos)\n", videoId: 'DZA6oTxwyV8', shuffle: true },
   { id: "PLmFgO4C0SOsi7iiOH4OBYfEnyisECv71T", title: "How It's Made \n(750+ Videos)\n", videoId: '9Pclv-f_zPw', shuffle: true },
   { id: "PLmFgO4C0SOsivoJyctuHcmVRv2exrkq-P", title: "Bill Nye the Science Guy \n(40+ Videos)\n", videoId: 'YKQrA563brM', shuffle: true },
 
