@@ -21,16 +21,14 @@ const byobYoutubeLinkEl = document.querySelector('.byob-youtube-link');
 let globalAnimationLockMs = 0;
 let nextPreviousAnimationLockMs = 0;
 
+const initYoutubeVideoId = `5WBYzO8EtrQ`;
+
 console.log(`HERE!!!!!`);
 
 notifyIfBrowserIsNotCompat();
 
 function init() {
   console.log('init()');
-
-  // plyr.play();
-
-  showNotPlayingState();
 
   previousButtonEl.onclick = (e) => {
     console.log('previousButtonEl clicked');
@@ -107,8 +105,9 @@ function init() {
     startVideoFromUrl(byobYoutubeLinkEl.value);
   };
 
-  // Maybe we got a query param
-  startVideoFromUrl(window.location.href);
+  // SET IT UP
+  showNotPlayingState();
+  startVideoFromUrl(window.location.href); // Maybe we got a query param
 }
 
 function injectPlaylists() {
@@ -119,6 +118,7 @@ function injectPlaylists() {
     cardEl.onclick = () => {
       console.log(`click ${pl.title} ${pl.id}`);
       activeInternalPl = pl;
+      videoTitleEl.textContent = `${pl.title}...`;
       startPlaylist(pl.id);
     };
     // cardEl.style.background = `linear-gradient(rgba(255,255,255,0.92), rgba(255,255,255,0.82)), url(https://i.ytimg.com/vi/${pl.videoId}/maxresdefault.jpg)`;
@@ -132,7 +132,8 @@ function injectPlaylists() {
 
 function showPlayingState() {
   console.log('showPlayingState()');
-  playerWrapperEl.style.display = 'block'; //Show player that is initially hidden until play
+  if ((hideIfDefaultVideo())) { return; }
+  showEl(playerWrapperEl); //Show player that is initially hidden until play
   getYoutubePlayer().unMute();
   getYoutubePlayer().setLoop(true);
   if (activeInternalPl && !activeInternalPl.shuffle) {
@@ -143,8 +144,8 @@ function showPlayingState() {
   if (isShufflePending) {
     console.log('showPlayingState() isShufflePending=truthy');
     isShufflePending = false;
-    getYoutubePlayer().nextVideo();
-    getYoutubePlayer().setVolume(100);
+    // getYoutubePlayer().nextVideo();
+    // getYoutubePlayer().setVolume(100);
   }
 
   showNextPreviousButtons(true);
@@ -238,12 +239,9 @@ function startPlaylist(playlistId) {
   } else {
     isShufflePending = true;
   }
-
+  plyr.stop();
   getYoutubePlayer().loadPlaylist({ list: playlistId });
-  //Show player that is initially hidden until play
-  playerWrapperEl.style.display = 'block';
-  playerWrapperEl.scrollIntoView();
-  playlistIntroEl.style.display = 'block';
+  handlePlayerStartingToPlay();
 }
 
 function startVideoFromUrl(urlString) {
@@ -254,24 +252,58 @@ function startVideoFromUrl(urlString) {
     if (playlistId && playlistId.length >= 6) {
       activeInternalPl = null;
       startPlaylist(playlistId);
-  
+
     } else {
       let videoId = parseYoutubeId(urlString);
       console.log(`startVideoFromUrl got id=${videoId} from ${urlString}`);
       if (!videoId || videoId.length <= 6) { return; }
 
       activeInternalPl = null;
-      getYoutubePlayer().loadVideoById(videoId);
+      plyr.source = {
+        type: 'video',
+        sources: [
+          {
+            src: urlString,
+            provider: 'youtube',
+          },
+        ],
+      };
+      // getYoutubePlayer().loadVideoById(videoId);
     }
-  
-    //Show player that is initially hidden until play
-    playerWrapperEl.style.display = 'block';
-    playerWrapperEl.scrollIntoView();
-    playlistIntroEl.style.display = 'block';
-  } catch(e) {
+
+    handlePlayerStartingToPlay();
+  } catch (e) {
     console.log(`${urlString}`, e);
   }
 
+}
+
+function hideIfDefaultVideo() {
+  try {
+    const videoData = getYoutubePlayer().getVideoData();
+    if (videoData && videoData.video_id == initYoutubeVideoId) {
+      console.log(`default video detected... stopping`);
+      handlePlayerClosed();
+      return true;
+    }
+  } catch (e) {
+    console.error(e);
+  }
+}
+
+function handlePlayerStartingToPlay() {
+  console.log(`handlePlayerStartingToPlay()`);
+  if (hideIfDefaultVideo()) { return; }
+  //Show player that is initially hidden until play
+  showEl(playerWrapperEl);
+  playerWrapperEl.scrollIntoView();
+  showEl(playlistIntroEl);
+}
+
+function handlePlayerClosed() {
+  console.log(`handlePlayerClosed()`);
+  hideEl(playerWrapperEl);
+  hideEl(playlistIntroEl);
 }
 
 function notifyIfBrowserIsNotCompat() {
@@ -354,6 +386,9 @@ plyr.on('statechange', (event) => {
       playerStatusText = 'playing';
       playbackErrorCountToLimitAutoNext = 0;
       showPlayingState();
+      try {
+        console.log(getYoutubePlayer().getVideoData());
+      } catch (e) { }
       break;
     case 2:
       playerStatusText = 'paused';
@@ -387,7 +422,7 @@ const playlists = [
 
   { id: "PLmFgO4C0SOsi7iiOH4OBYfEnyisECv71T", title: "How It's Made \n(750+ Videos)\n", videoId: '9Pclv-f_zPw', shuffle: true },
   { id: "PLmFgO4C0SOsivoJyctuHcmVRv2exrkq-P", title: "Bill Nye the Science Guy \n(40+ Videos)\n", videoId: 'YKQrA563brM', shuffle: true },
-  
+
   { id: "PLmFgO4C0SOsjd9evapPcZ2WL3JwC-C_ci", title: "Master Chef Junior \n(85+ Videos)\n", videoId: 'aSNu2XmwTwk', shuffle: true },
   // https://www.youtube.com/playlist?list=PL9b2z91oSo5-0jZYavxhe8nQFjpCYkO6w
   { id: "PLmFgO4C0SOshaqv6cXRcdQzKW-sVEgnK7", title: "Chopped Junior \n(48+ Videos)\n", videoId: 'RxmvWwtRmG8', shuffle: true },
@@ -396,25 +431,25 @@ const playlists = [
   { id: "PLmFgO4C0SOsjpkHCzDO6sPBzVxWHLsnfs", title: "Safari Live | National Geographic Kids \n(50+ Videos)\n", videoId: 'OUl7OnStLmo', shuffle: true },
   { id: "PLmFgO4C0SOsgGTEaT-WuxkR8waXbIg2UT", title: "Weird But True! | National Geographic Kids \n(115+ Videos)\n", videoId: 'TX4LurBSq9M', shuffle: true },
   { id: "PLmFgO4C0SOsinaMzHWQX5zHImTRQG8XVq", title: "Amazing Animals | National Geographic Kids \n(40+ Videos)\n", videoId: 'tlZwYsJpqjo', shuffle: true },
-  
-  
-    // https://www.youtube.com/playlist?list=UUfXD2JoagtH-hMoVmNrqjsA
-    { id: "UUfXD2JoagtH-hMoVmNrqjsA", title: "Music Class with Morah Kira \n(32+ Songs)\n", videoId: 'P-mNEARYxSM', shuffle: true },
-    // maybe just put the compilations? https://www.youtube.com/playlist?list=PLizo1Ckr2mca0cs1xb6Z2Jum7tinWVCmo
-    { id: "PLizo1Ckr2mca0cs1xb6Z2Jum7tinWVCmo", title: "Preschool Music Lessons From The Prodigies Music Curriculum \n(10+ Songs)\n", videoId: 'VTmk_ADNOgg', shuffle: true },
-    { id: "PLizo1Ckr2mcb_IG3AAI788n8oNcZ1J0xR", title: "Preschool Learning Videos From The Prodigies Music Curriculum \n(10+ Songs)\n", videoId: 'z9WAvSPjHmY', shuffle: true },
-    { id: "PLmFgO4C0SOsgsykuI-LTcv08nGaaBGX-I", title: "Reading Children's Story Books \n(160+ Videos)\n", videoId: 'KwF8WLXb4fk', shuffle: true },  
 
-  
+
+  // https://www.youtube.com/playlist?list=UUfXD2JoagtH-hMoVmNrqjsA
+  { id: "UUfXD2JoagtH-hMoVmNrqjsA", title: "Music Class with Morah Kira \n(32+ Songs)\n", videoId: 'P-mNEARYxSM', shuffle: true },
+  // maybe just put the compilations? https://www.youtube.com/playlist?list=PLizo1Ckr2mca0cs1xb6Z2Jum7tinWVCmo
+  { id: "PLizo1Ckr2mca0cs1xb6Z2Jum7tinWVCmo", title: "Preschool Music Lessons From The Prodigies Music Curriculum \n(10+ Songs)\n", videoId: 'VTmk_ADNOgg', shuffle: true },
+  { id: "PLizo1Ckr2mcb_IG3AAI788n8oNcZ1J0xR", title: "Preschool Learning Videos From The Prodigies Music Curriculum \n(10+ Songs)\n", videoId: 'z9WAvSPjHmY', shuffle: true },
+  { id: "PLmFgO4C0SOsgsykuI-LTcv08nGaaBGX-I", title: "Reading Children's Story Books \n(160+ Videos)\n", videoId: 'KwF8WLXb4fk', shuffle: true },
+
+
   // { id: "PLgWWM18u2RI2l4ViZ5Jw3j8rL8_AID2uF", title: "Maccabeats Passover Acappella Music" },
   // { id: "PLgWWM18u2RI0sAiiWDjmaPFa6s16KLd7A", title: "Maccabeats Hanukkah Acappella Music" },
   // { id: "PLgWWM18u2RI3x0sD5oPgJgsaiucz2RDzW", title: "Maccabeats Rosh Hashanah Acappella Music" },
   { id: "PLmFgO4C0SOsgivMkikthVr97S8C5S0tXw", title: "Key Events - History of Israel Explained \n(10+ Videos)\n", videoId: 'zdt4L6VTbi4', shuffle: false },
   { id: "PLmFgO4C0SOsglcJx73D9tt169RNXHRHly", title: "Key Events - Six Day War \n(10+ Videos)\n", videoId: 'KqS8BQDjYpw', shuffle: false },
-  
+
   { id: "PLebBR0XgC_BZam9E0VAHnbRcLEqpCIluA", title: "Pillar of Fire (עמוד האש) Zionism Mini Series \n(7+ Videos)\n", videoId: 'Scxjr1eaXmU', shuffle: false },
   { id: "PLpIseRpqF0KrKPnuG0lQJj3b_DXmmKURk", title: "Tkuma, The First 50 Years Israel History Mini Series \n(6+ Videos)\n", videoId: 'y3dq-QgU1kw', shuffle: false },
-  
+
   { id: "PLmFgO4C0SOsjPtioE3W7Ft-kCkKk-4afg", title: "All About Israel \n(5+ Videos)\n", videoId: 'NwGlRcXefZo', shuffle: true },
 
   { id: "PLmFgO4C0SOshRj_29d3Ek7Lmra-cvgivJ", title: "Super WHY! Full Episodes (Non-USA Playback Only) - Season 1 \n(36+ Videos)\n", videoId: 'gPTOvG2aGwI', shuffle: false },
